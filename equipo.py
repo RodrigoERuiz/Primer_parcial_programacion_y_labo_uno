@@ -155,21 +155,13 @@ class Equipo:
         jugador_selccionado = self.filtar_jugador_por_indice_estadisticas()
         return jugador_selccionado
     
-    
-    
-    '''
-    10)A) (2 puntos)Crear la tabla posiciones, (solo contenga las posiciones válidas)
-                    que se deben cargar con las posiciones que aparecen en el listado de jugadores en
-                    una función desarrollada por ustedes .
-                    nota: el listado de jugadores que NO DEBE ESTAR en la SQLite
-                    nota: solo necesitan tener la tabla posiciones
-    '''
     def generar_lista_posiciones(self)->list[str]:
+        '''
+           Genera una lista de las posiciones válidas presentes en la lista de jugadores del equipo sin posiciones repetidas.
+
+            Retorna:
+                list[str]: Una lista de cadenas que representan las posiciones válidas de los jugadores en el equipo.
+        '''
         lista_posiciones_validas = [jugador.posicion for jugador in self.lista_jugadores]
         lista_posiciones_validas = list(set(lista_posiciones_validas))
         return lista_posiciones_validas
-
-    
-    
-mi_equipo = Equipo()
-print(mi_equipo.generar_lista_posiciones())
