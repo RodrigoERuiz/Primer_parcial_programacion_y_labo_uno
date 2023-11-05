@@ -189,6 +189,17 @@ def verificar_continuidad_de_ejecucion(mensaje:str)->bool:
         return False
 
 def quick_sort_lista_jugadores_recursivo(lista_jugadores:list[Jugador], menor_a_mayor:bool, campo:str):
+    '''
+    Se utliza para ordenar la lista de jugadores según un unico atributo de la clase estadistica
+    
+    Recibe:
+        lista_jugadores (list[Jugador]): La lista de jugadores que se desea ordenar.
+        menor_a_mayor (bool): Indica si se debe ordenar de menor a mayor (True) o de mayor a menor (False).
+        campo (str): El campo por el cual se realizará la comparación. Debe ser un atributo de estadísticas del jugador
+        
+    Retorna:
+        list[Jugador]: La lista de jugadores ordenada de acuerdo al campo especificado y el orden indicado.
+    '''
     if len(lista_jugadores) <= 1:
         return lista_jugadores
 
@@ -216,6 +227,18 @@ def quick_sort_lista_jugadores_recursivo(lista_jugadores:list[Jugador], menor_a_
     return lista_iz
 
 def quick_sort_lista_jugadores_recursivo_dos_parametros(lista_jugadores:list[Jugador], menor_a_mayor:bool, campo_uno:str, campo_dos:str):
+    '''
+    Se utliza para ordenar la lista de jugadores según dos atributos sumados de la clase estadistica
+
+    Recibe:
+        lista_jugadores (list[Jugador]): La lista de jugadores que se desea ordenar.
+        menor_a_mayor (bool): Indica si se debe ordenar de menor a mayor (True) o de mayor a menor (False).
+        campo_uno (str): Es uno de los atributos de la clase estadistica que se sumara para realizar el ordenamiento
+        campo_dos (str): Es el segundo de los atributos de la clase estadistica que se sumara para realizar el ordenamiento
+    
+    Retorna:
+        list[Jugador]: La lista de jugadores ordenada de acuerdo a la suma de los campos especificados y el orden indicado.
+    '''
     if len(lista_jugadores) <= 1:
         return lista_jugadores
 
@@ -240,6 +263,44 @@ def quick_sort_lista_jugadores_recursivo_dos_parametros(lista_jugadores:list[Jug
     lista_iz = quick_sort_lista_jugadores_recursivo_dos_parametros(lista_iz, menor_a_mayor,campo_uno,campo_dos)
     lista_iz.append(pivot)
     lista_de = quick_sort_lista_jugadores_recursivo_dos_parametros(lista_de, menor_a_mayor,campo_uno,campo_dos)
+    lista_iz.extend(lista_de)
+
+    return lista_iz
+
+def quick_sort_lista_jugadores_atributo_primera_capa(lista_jugadores:list[Jugador], menor_a_mayor:bool, campo:str):
+    '''
+    Se utliza para ordenar la lista de jugadores según un unico atributo de la clase Jugador
+    
+    Recibe:
+        lista_jugadores (list[Jugador]): La lista de jugadores que se desea ordenar.
+        menor_a_mayor (bool): Indica si se debe ordenar de menor a mayor (True) o de mayor a menor (False).
+        campo (str): El campo por el cual se realizará la comparación. Debe ser un atributo propio de la clase Jugador
+        
+    Retorna:
+        list[Jugador]: La lista de jugadores ordenada de acuerdo al campo especificado y el orden indicado.
+    '''
+    if len(lista_jugadores) <= 1:
+        return lista_jugadores
+
+    pivot = lista_jugadores[0]
+    lista_iz = []
+    lista_de = []
+
+    for jugador in lista_jugadores[1:]:
+        if menor_a_mayor:
+            if getattr(jugador, campo) < getattr(pivot, campo):
+                lista_iz.append(jugador)
+            else:
+                lista_de.append(jugador)
+        else:
+            if getattr(jugador, campo) > getattr(pivot, campo):
+                lista_iz.append(jugador)
+            else:
+                lista_de.append(jugador)
+
+    lista_iz = quick_sort_lista_jugadores_atributo_primera_capa(lista_iz, menor_a_mayor,campo)
+    lista_iz.append(pivot)
+    lista_de = quick_sort_lista_jugadores_atributo_primera_capa(lista_de, menor_a_mayor,campo)
     lista_iz.extend(lista_de)
 
     return lista_iz
@@ -389,7 +450,7 @@ def mostrar_menu(patron_regex:str, menu:str): # Se utliza en bucle principal y s
     
 def dream_team_app(equipo:Equipo):
     ejecutar = True
-    case_2_ejecutado = None
+    case_2_ejecutado, case_11_ejecutado = (None,None)
     while ejecutar:
         opcion = mostrar_menu('^[1-9]|10|11$',menu_inicial)
         match(opcion):
@@ -409,7 +470,7 @@ def dream_team_app(equipo:Equipo):
                     exportar_csv('archivo_prueba.csv','w',jugador_elegido.mostrar_estadistica_jugador())
                 case_2_ejecutado = None 
             case '5':
-                jugadores_ordenados_por_promedio_de_puntos = quick_sort_lista_jugadores_recursivo(equipo.lista_jugadores,False,'get_promedio_puntos_por_partido')
+                jugadores_ordenados_por_promedio_de_puntos = quick_sort_lista_jugadores_atributo_primera_capa(equipo.lista_jugadores,True,'nombre')
                 imprimir_resultados(jugadores_ordenados_por_promedio_de_puntos,'get_promedio_puntos_por_partido')
             case '6': 
                 equipo.buscar_hall_oh_fame_por_nombre()
@@ -485,13 +546,15 @@ def dream_team_app(equipo:Equipo):
                 insertar_posisciones_db('db_posiciones','tabla_posiciones',lista_posiciones)
                 
             case '11':
+                case_11_ejecutado = True
                 break
             
             case _:
-                print ('Opcion invalida')  
-           
-        ejecutar = verificar_continuidad_de_ejecucion('\n¿Desea realizar otra operación? (si/no) ')
+                print ('Opcion invalida')
+                  
+        if not case_11_ejecutado:
+            ejecutar = verificar_continuidad_de_ejecucion('\n¿Desea realizar otra operación? (si/no) ')
         limpiar_consola() 
         
-dream_team_app(mi_equipo)
+
 
