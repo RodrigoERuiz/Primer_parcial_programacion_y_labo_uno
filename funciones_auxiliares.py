@@ -265,7 +265,6 @@ def mostrar_nombre_y_apartado_estadisticos_equipo(lista_jugadores:list[Jugador],
 def obtener_porcentaje(valor_actual:int, valor_maximo:int):
     return (valor_actual * 100) / valor_maximo
 
-
 def listar_jugadores_ordenados_con_porcentaje(lista_jugadores_ordenados, apartado_uno, apartado_dos, hay_que_listar_todos = None):
     '''
         Lista los jugadores ordenados por un par de apartados estadísticos con su porcentaje en relación al máximo.
@@ -316,27 +315,6 @@ def listar_jugadores_ordenados_con_porcentaje(lista_jugadores_ordenados, apartad
         string_retorno += f'{i}. {mostrar_nombre_y_apartado_estadisticos_jugador(jugador, apartado_uno, apartado_dos)} {round(obtener_porcentaje(apartados_sumados_jugador_actual, valores_maximos_sumados), 2)}%\n'
     
     return string_retorno
-
-def imprimir_menu():
-    print(
-        r'''
-          1) Mostrar la lista de todos los jugadores del Dream Team. Con el formato: Nombre Jugador - Posición
-          2) Seleccionar un jugador por indice y mostrar sus estadísticas
-          3) Calcular promedio de puntos por partido del equipo
-          4) Ingresar jugador y verificar si es HoF
-          5) Calcular y mostar el jugador con mayor cantidad de rebotes totales
-          6) Buscar jugador por nombre y mostrar logros
-          7) Mostrar jugadores ordenados por temporadas jugadas
-          8) Guardar listado de jugadores ordenado por temporadas jugadas en un archivo CSV con su apellido.csv
-          9) Guardar listado de jugadores ordenado por temporadas jugadas en un archivo JSON con su apellido.json
-         10) Crear base de datos de jugadores ordenados por temporadas jugadas
-         11) ordenar los datos por el jugador que sumando los robos totales más los bloqueos totales ("robos_totales" + "bloqueos_totales")
-         12) listar todos los jugadores ordenados y mostrar el porcentaje de este valorsumado tomando como 100% el valor máximo
-         13) crear un filtro que permita ingresar un valor y que solo muestre esa cantidad de jugadores ordenados por la suma de los dos campos.
-         14) Crear la tabla posiciones, (solo contenga las posiciones válidas) que se deben cargar con las posiciones que aparecen en el listado de jugadores
-          x) Salir
-        '''
-    )
     
 def imprimir_resultados(jugadores, dato_para_imprimir, apartado_estadistico=None):
     '''
@@ -357,78 +335,163 @@ def imprimir_resultados(jugadores, dato_para_imprimir, apartado_estadistico=None
         for jugador in jugadores:
             print(f'{jugador.nombre}: puntos: {jugador.estadistica.get_promedio_puntos_por_partido}')
 
+menu_inicial =\
+    '''
+          1) Mostrar la lista de todos los jugadores del Dream Team
+          2) Seleccionar un jugador por indice y mostrar sus estadísticas (OPCION EXPORTAR A CSV)
+          3) Exportar estadistica a CSV
+          4) Buscar jugador por nombre y mostrar sus logros
+          5) Calcular y mostrar el promedio de puntos por partido de todo el equipo del Dream Team, ordenado por nombre de manera ascendente
+          6) Ingresar jugador y verificar si es HoF
+          7) Calcular y mostar el jugador con mayor cantidad de rebotes totales 
+          8) Generar listado ordenado por temporadas y exportar archivo CSV/JSON/DB
+          9) Ordenar los jugadores por el valor sumado de robos y bloqueos totales
+         10) Crear base de datos de jugadores ordenados por temporadas jugadas
+         11) Salir
+         
+        Seleccione una opcion de la lista: '''
+menu_punto_8 =\
+    '''
+    A) guardar este listado ordenado en un archivo CSV con su apellido.csv
+    B) Permitir guardar este listado ordenado en un archivo JSON y permitir al usuario ingresar el nombre del archivo a guardar (validar con regex)
+    C) Guardar en Base de datos
+    D) Salir del sub menu actual
     
-def menu_principal():
-    imprimir_menu()
-    opcion = input('Seleccione una opcion de la lista: ')
-    patron = r'^[0-9]+$'
+    Seleccione una opcion de la lista: '''
+menu_punto_9 =\
+    '''
+    A) Ordenar los jugadores por le valor sumado de rebotes totales y bloqueos totales
+    B) listar todos los jugadores ordenados y mostrar el porcentaje de este valor sumado tomando como 100% el valor máximo
+    C) crear un filtro que permita ingresar un valor y que solo muestre esa cantidad de jugadores ordenados por la suma de los dos campos
+    D) Salir del sub menu actual
+    
+    Seleccione una opcion de la lista: '''
+
+def mostrar_menu(patron_regex:str, menu:str): # Se utliza en bucle principal y sub menu del punto 8 y 9
+    '''
+    Muestra un menú y solicita una opción al usuario.
+
+    Esta función muestra un menú en forma de cadena de texto y solicita al usuario que ingrese una opción. 
+    Luego, verifica si la opción ingresada por el usuario coincide con un patrón de expresión regular especificado.
+    Si la opción es válida, la función la devuelve en mayúsculas; de lo contrario, devuelve -1.
+
+    Parámetros:
+        patron_regex (str): Un patrón de expresión regular utilizado para validar la opción ingresada por el usuario.
+        menu (str): El menú que se mostrará al usuario en forma de cadena de texto.
+
+    Retorna:
+        str: La opción ingresada por el usuario en mayúsculas si es válida
+    '''  
+    opcion = input(f'{menu}')
+    patron = rf'{patron_regex}'
     if re.match(patron,opcion) != None:
         return opcion.upper()
-    else:
-        return -1
-        
+    
 def dream_team_app(equipo:Equipo):
     ejecutar = True
+    case_2_ejecutado = None
     while ejecutar:
-        opcion = menu_principal()
+        opcion = mostrar_menu('^[1-9]|10|11$',menu_inicial)
         match(opcion):
             case "1":
                 equipo.mostrar_jugadores()
             case "2":
+                case_2_ejecutado = True
                 jugador_elegido = mi_equipo.mostrar_estadistica_de_jugador_elegido_por_indice()
                 print(jugador_elegido.mostrar_estadistica_jugador())
-                opcion = verificar_continuidad_de_ejecucion('Desea exportar la estadistica en formato CSV? si/no: ')
-                if opcion:
-                    exportar_csv('archivo_prueba.csv','w',jugador_elegido.mostrar_estadistica_jugador())
             case '3':
+                if case_2_ejecutado:
+                    exportar_csv('archivo_prueba.csv','w',jugador_elegido.mostrar_estadistica_jugador())
+                else:
+                    print('\nprimero debe seleccionar un jugador...\n')
+                    jugador_elegido = mi_equipo.mostrar_estadistica_de_jugador_elegido_por_indice()
+                    print(jugador_elegido.mostrar_estadistica_jugador())
+                    exportar_csv('archivo_prueba.csv','w',jugador_elegido.mostrar_estadistica_jugador())
+                case_2_ejecutado = None 
+            case '5':
                 jugadores_ordenados_por_promedio_de_puntos = quick_sort_lista_jugadores_recursivo(equipo.lista_jugadores,False,'get_promedio_puntos_por_partido')
                 imprimir_resultados(jugadores_ordenados_por_promedio_de_puntos,'get_promedio_puntos_por_partido')
-            case '4': 
+            case '6': 
                 equipo.buscar_hall_oh_fame_por_nombre()
-            case "5":
+            case "7":
                 dato_a_buscar = "rebotes totales"
                 jugador_buscado = equipo.buscar_jugador_con_maximo_o_minimo_apartado_estadistico('get_rebotes_totales',True)
                 imprimir_resultados(jugador_buscado,dato_a_buscar, 'get_rebotes_totales')
-            case "6":
+            case "4":
                 jugador_buscado = equipo.buscar_jugador_por_nombre()
                 for jugador in jugador_buscado:
                     jugador.mostrar_logros()
-            case '7':
-                print(obtener_jugadores_ordenados_por(equipo.lista_jugadores,False,'get_temporadas'))
+
             case '8':
-                nombre_del_archivo = input('Ingrese el nombre con el que desea guardar el archivo: ').lower()
-                exportar_csv(f'{nombre_del_archivo}.csv','w',obtener_jugadores_ordenados_por(equipo.lista_jugadores,False,'get_temporadas'))
+                ejecutar = True
+                salir_sub_menu = None
+                while ejecutar: 
+                    print(obtener_jugadores_ordenados_por(equipo.lista_jugadores,False,'get_temporadas'))  
+                    opcion = mostrar_menu('^[Aa|Bb|Cc|Dd]{1}$', menu_punto_8)             
+                    match(opcion):
+                    
+                        case 'A':
+                            nombre_del_archivo = input('Ingrese el nombre con el que desea guardar el archivo: ').lower()
+                            exportar_csv(f'{nombre_del_archivo}.csv','w',obtener_jugadores_ordenados_por(equipo.lista_jugadores,False,'get_temporadas'))
+                        
+                        case 'B':
+                            nombre_del_archivo = input('Ingrese el nombre con el que desea guardar el archivo: ').lower()
+                            string_convertido_a_json = convertir_string_a_diccionario(obtener_jugadores_ordenados_por(equipo.lista_jugadores,False,'get_temporadas'))
+                            exportar_json(f'{nombre_del_archivo}.json','w',string_convertido_a_json) 
+                            
+                        case 'C':
+                            crear_db('db_jugadores_ordenados_por_temporadas','jugadores_ordenadados_temporadas')
+                            insertar_filas_db('db_jugadores_ordenados_por_temporadas','jugadores_ordenadados_temporadas',convertir_string_a_diccionario(obtener_jugadores_ordenados_por(equipo.lista_jugadores,False,'get_temporadas')))
+                            
+                        case 'D':
+                            salir_sub_menu = True
+                        case _:
+                            continue
+
+                    if salir_sub_menu or not verificar_continuidad_de_ejecucion('Desea continuar dentro de este sub-menu? si/no: '):
+                        ejecutar = False 
+                    limpiar_consola()  
+
             case '9':
-                nombre_del_archivo = input('Ingrese el nombre con el que desea guardar el archivo: ').lower()
-                string_convertido_a_json = convertir_string_a_diccionario(obtener_jugadores_ordenados_por(equipo.lista_jugadores,False,'get_temporadas'))
-                exportar_json(f'{nombre_del_archivo}.json','w',string_convertido_a_json)
+                ejecutar = True
+                salir_sub_menu = None
+                while ejecutar:
+                    opcion = mostrar_menu('^[Aa|Bb|Cc|Dd]{1}$', menu_punto_9)
+                    match(opcion):
+                        case 'A':
+                            jugadores_ordenados_por_apartados_estadisticos_sumados = quick_sort_lista_jugadores_recursivo_dos_parametros(equipo.lista_jugadores,False,'get_robos_totales','get_bloqueos_totales')
+                            print(mostrar_nombre_y_apartado_estadisticos_equipo(jugadores_ordenados_por_apartados_estadisticos_sumados,'get_robos_totales','get_bloqueos_totales'))
+                            
+                        case 'B':
+                            jugadores_ordenados_por_apartados_estadisticos_sumados = quick_sort_lista_jugadores_recursivo_dos_parametros(equipo.lista_jugadores,False,'get_robos_totales','get_bloqueos_totales')
+                            print(listar_jugadores_ordenados_con_porcentaje(jugadores_ordenados_por_apartados_estadisticos_sumados,'get_robos_totales','get_bloqueos_totales',True))
+                            
+                        case 'C':
+                            jugadores_ordenados_por_apartados_estadisticos_sumados = quick_sort_lista_jugadores_recursivo_dos_parametros(equipo.lista_jugadores,False,'get_robos_totales','get_bloqueos_totales')
+                            print(listar_jugadores_ordenados_con_porcentaje(jugadores_ordenados_por_apartados_estadisticos_sumados,'get_robos_totales','get_bloqueos_totales',False))
+                            
+                        case 'D':
+                            salir_sub_menu = True
+                            
+                        case _:
+                            continue
+                      
+                    if salir_sub_menu or not verificar_continuidad_de_ejecucion('Desea continuar dentro de este sub-menu? si/no: '):
+                        ejecutar = False    
+                    limpiar_consola()
             case '10':
-                crear_db('db_jugadores_ordenados_por_temporadas','jugadores_ordenadados_temporadas')
-                insertar_filas_db('db_jugadores_ordenados_por_temporadas','jugadores_ordenadados_temporadas',convertir_string_a_diccionario(obtener_jugadores_ordenados_por(equipo.lista_jugadores,False,'get_temporadas')))
-            case '11':
-                jugadores_ordenados_por_apartados_estadisticos_sumados = quick_sort_lista_jugadores_recursivo_dos_parametros(equipo.lista_jugadores,False,'get_robos_totales','get_bloqueos_totales')
-                print(mostrar_nombre_y_apartado_estadisticos_equipo(jugadores_ordenados_por_apartados_estadisticos_sumados,'get_robos_totales','get_bloqueos_totales'))
-            case '12':
-                jugadores_ordenados_por_apartados_estadisticos_sumados = quick_sort_lista_jugadores_recursivo_dos_parametros(equipo.lista_jugadores,False,'get_robos_totales','get_bloqueos_totales')
-                print(listar_jugadores_ordenados_con_porcentaje(jugadores_ordenados_por_apartados_estadisticos_sumados,'get_robos_totales','get_bloqueos_totales',True))
-            case '13':
-                jugadores_ordenados_por_apartados_estadisticos_sumados = quick_sort_lista_jugadores_recursivo_dos_parametros(equipo.lista_jugadores,False,'get_robos_totales','get_bloqueos_totales')
-                print(listar_jugadores_ordenados_con_porcentaje(jugadores_ordenados_por_apartados_estadisticos_sumados,'get_robos_totales','get_bloqueos_totales',False))
-            case '14':
                 lista_posiciones = equipo.generar_lista_posiciones()
                 crear_db_posiciones('db_posiciones','tabla_posiciones')
                 insertar_posisciones_db('db_posiciones','tabla_posiciones',lista_posiciones)
-            case 'x':
+                
+            case '11':
                 break
             
             case _:
-                print ('Opcion invalida')
-          
-             
-        ejecutar = verificar_continuidad_de_ejecucion('¿Desea realizar otra operación? (si/no) ')
+                print ('Opcion invalida')  
+           
+        ejecutar = verificar_continuidad_de_ejecucion('\n¿Desea realizar otra operación? (si/no) ')
         limpiar_consola() 
         
-
-            
 dream_team_app(mi_equipo)
 
